@@ -1,0 +1,31 @@
+<div class="bg-white" id="navbar-cta">
+	<nav class="group container relative mx-auto flex items-center justify-between space-x-4 py-3 px-3" id="navbar">
+        <a href="/" class="px-6 py-3 text-lg font-semibold bg-purple-300 text-white rounded-xl hover:bg-purple-500">NCHU Market</a>
+    {% if request.user.is_authenticated %}
+    <p class="px-3 py-3 text-lg font-semibold bg-purple-500 text-white rounded-xl">歡迎：{{request.user}}</p>
+    <ul id="navbar-menu" class="absolute right-1 top-[4.05rem] z-10 hidden w-full flex-col items-center justify-center bg-white px-3 group-hover:flex md:static md:flex md:w-auto md:flex-row md:space-y-0 md:space-x-4">
+        <li class="px-2 py-1 md:p-0"><a href="{% url 'search-url' %}" class="text-lg font-semibold hover:text-gray-500">Browse</a></li>
+        <li class="px-2 py-1 md:p-0"><a href="{% url 'new-url' %}" class="text-lg font-semibold hover:text-gray-500">Add New Items</a></li>
+        <li class="px-2 py-1 md:p-0"><a href="{% url 'show-url' %}" class="text-lg font-semibold hover:text-gray-500">My Item</a></li>
+        <li class="px-2 py-1 md:p-0"><a href="{% url 'cart' %}" class="text-lg font-semibold hover:text-gray-500">
+          	<i class="fa fa-shopping-cart"></i>
+          	{% if cart_item_count > 0 %}
+            	<span class="badge bg-red-500 text-white rounded-full px-2 py-1">{{ cart_item_count }}</span>
+          	{% endif %}
+        </a>
+      	</li>
+        	<li class="px-1 py-1 md:p-0"><a href="{% url 'message_list' %}" class="text-lg font-semibold hover:text-gray-500">訊息中心</a></li>
+    </ul>
+    <a href="{% url 'url_logout' %}" class="px-6 py-3 text-lg font-semibold bg-violet-300 text-white rounded-xl hover:bg-indigo-400">Log out</a>
+    {% else %}
+    <ul id="navbar-menu" class="absolute right-1 top-[4.05rem] z-10 hidden w-full flex-col items-center justify-center bg-white px-3  group-hover:flex md:static md:flex md:w-auto md:flex-row md:space-y-0 md:space-x-4">
+        <li class="px-1 py-1 md:p-0"><a href="{% url 'search-url' %}" class="text-lg font-semibold hover:text-gray-500">Browse</a></li>
+        <li class="px-1 py-1 md:p-0"><a href="{% url 'url_signup' %}" class="px-6 py-3 text-lg font-semibold bg-violet-300 text-white rounded-xl hover:bg-indigo-400">Sign up</a></li>
+        <li class="px-1 py-1 md:p-0"><a href="{% url 'url_login' %}" class="px-6 py-3 text-lg font-semibold bg-purple-300 text-white rounded-xl hover:bg-purple-500">Log in</a></li>
+    </ul>
+    {% endif %} 
+      	<svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 md:hidden" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+        	<path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />
+      	</svg>
+    </nav>
+  </div>

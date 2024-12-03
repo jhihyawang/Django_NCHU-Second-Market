@@ -1,0 +1,92 @@
+{% extends 'item/base.html' %}
+{% block title %}Search{% endblock %}
+{% block content %}
+<div class="p-6 grid grid-cols-4 gap-4 bg-gray-100 rounded-xl">
+    <div class="col-span-1">
+        <form method="get" action="{% url 'search-url' %}">
+            <input name="query" class="py-2 px-4 text-sm border rounded-xl " type="text" value="{{ query }}" placeholder="Find a bike, a chair or car...">
+
+            <button class="px-8 text-base bg-teal-500 text-white rounded-xl">Search</button>
+            <button  class="px-8 text-base bg-teal-500 text-white rounded-xl"><a href="{% url 'search-url'%}">Clear</a></button>
+        </form>
+        <hr class="my-6">
+        <p class="font-semibold">Categories</p>
+        <ul>
+            {% for category in categories %}
+            {% if category.id == category_id %}
+                <li class="py-2 px-2 rounded-xl bg-gray-200">
+                    <a href="{% url 'search-url' %}?query={{ query }}&category={{ category.id }}">{{ category.name }}</a>
+                </li>
+                {%else%}
+                <li class="py-2 px-2 rounded-xl">
+                    <a href="{% url 'search-url' %}?query={{ query }}&category={{ category.id }}">{{ category.name }}</a>
+                </li>
+                {% endif %}
+            {% endfor %}
+        </ul>
+    </div>
+
+    <div class="col-span-3">
+        <div class="grid grid-cols-3 gap-3">
+            {% for item in items %}
+            <div class="card h-100">
+                <img src="{{item.image.url}}" class="card-img-top" alt="...">
+            </div>
+            <div class="card-body">
+                <h5 class="card-title display: inline;">
+                    <div class="contrnt__item">
+                        <div class="content__icon">
+                            <b>{{item.name}}</b>
+                            <i class="fa fa-eye" aria-hidden="true">{{item.hit}}</i>
+                        </div>
+                    </div>
+                </h5>
+                <p class="text-gray-500">${{item.price}}</p>
+                <p class="text-gray-500">{{item.get_status_display}} </p>
+                <p class="card-text">{{item.description | truncatechars:"30"}}<a href="{% url 'detail-url' item.id %}" class="text-sky-400">SEE MORE DETAIL</a></p>
+                    {% if request.user.is_authenticated %}
+                        {% if item.created_by == request.user %}
+                            <button type="submit" class="inline-block mt-3 px-3 py-2 text-lg font-semibold bg-red-300 text-white rounded-xl hover:bg-red-100">這是你的商品</button>
+                        {% else %}
+                            <form method="POST" action="{% url 'add_to_cart' item.id %}">
+                                {% csrf_token %}
+                                <button type="submit" class="inline-block mt-3 px-3 py-2 text-lg font-semibold bg-red-300 text-white rounded-xl hover:bg-red-100">ADD TO CART</button>
+                            </form>
+                        {% endif %}
+                    {% else %}
+                        <br><a href="{% url 'url_login' %}" class="tinline-block mt-3 px-3 py-2 text-lg font-semibold bg-red-300 text-white rounded-xl hover:bg-red-100">Log in</a>
+                    {% endif %}
+                </div>
+            <div class="card-footer">
+                <hr>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+
+<style>
+    img {  
+    max-height: 100%;  
+    max-width: 100%; 
+    width: auto;
+    height: auto;
+}
+</style>
+
+<div class="mt-6 px-6 py-12 bg-gray-100 rounded-xl">
+    <h2 class="mb-12 text-2xl text-center">Categories</h2>
+    <div class="grid grid-cols-3 gap-3">
+        {% for category in categories %}
+        <div>
+            <a href="{% url 'search-url' %}?query={{ query }}&category={{ category.id }}">
+                <div class="p-6 bg-white rounded-xl">
+                    <h2 class="text-2xl">{{category.name}}</h2>
+                    <p class="text-gray-500">共有{{category.items.count}}件商品</p>
+                </div>
+            </a>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

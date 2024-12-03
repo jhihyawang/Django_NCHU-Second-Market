@@ -1,0 +1,42 @@
+{% extends 'accounts/base.html' %}
+
+{% block content %}
+
+
+	{% for message in messages %}
+		<div class='alert alert-{{message.tags}}'>{{ message }}</div>
+	{% endfor %}	
+
+<div class='body_content'>
+	<div class="wrapper">
+	        <div class="form-box login">
+	            <span class="icon-close"><ion-icon name="close"></ion-icon></span>
+	            <h2> Login </h2>
+	            <form action="." method="post">
+	            	{% csrf_token %}
+	                <div class="input-box">
+	                    <span class="icon"><ion-icon name="mail"></ion-icon></span>
+	                    {{ login_form.username }}
+	                    <label for="name">Username</label>
+	                </div>
+	                <div class="input-box">
+	                    <span class="icon"><ion-icon name="lock-closed"></ion-icon></span>
+	                    {{ login_form.password }}
+	                    <label for="password">Password</label>
+	                </div>
+	                <div class="remember-forgot">
+	                    <label><input type='checkbox'>Remember Me</label>
+	                    <a href="{% url 'reset_password' %}" >Forgot Password</a>
+	                </div>
+	                <button type="submit" class="submit_btn">Login</button>
+	                <div class="register">
+	                    <p>Don't have an account?<a href="{% url 'url_signup'%}" class="register-link">Register</a></p>
+	                </div>
+
+	            </form>
+	        </div>
+	</div>
+
+</div>
+
+{% endblock %}
