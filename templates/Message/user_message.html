@@ -1,0 +1,28 @@
+{% extends 'item/base.html' %}
+{% block title %}私人訊息{% endblock %}
+
+{% block content %}
+	<div class="message-list bg-gray-100 rounded-xl" >
+		<br>
+    	<h1 class="mb-6 text-2xl" align="center"><strong>和 {{ other_user.username }} 的私人訊息</strong></h1>
+    	{% for message in messages %}
+	      	<div class = "col-span-2 p-6 bg-red-100 rounded-xl">
+	        	<p>商品名稱: {{ message.item.name }}</p>
+	        	<p>發送者: {{ message.sender }}{% if message.sender == request.user %} (你){% endif %}</p>
+	        	<p>訊息內容: {{ message.content }}</p>
+	        	<p>Pub Time: {{ message.pub_time }}</p><br>
+	        	<form action="{% url 'user_message' other_user.id %}" method="POST">
+	         	{% csrf_token %}
+		          	<input type="hidden" name="item_id" value="{{ message.item.id }}">
+		          	<div class="mb-4 text-2xl">
+		            	<h2 class="mb-4 text-1xl">輸入訊息</h2>
+		            	<textarea class="form-control" id="content" name="content" rows="3"></textarea>
+		          	</div>
+		          	<button type="submit" class="px-6 py-2 text-lg font-semibold bg-purple-300 text-white rounded-xl hover:bg-purple-500">Send Message</button>
+	        	</form>
+	      	</div><br>
+    	{% empty %}
+      		<p>No messages.</p>
+    	{% endfor %}
+  	</div>
+{% endblock %}

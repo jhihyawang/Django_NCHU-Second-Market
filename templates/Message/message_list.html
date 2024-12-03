@@ -1,0 +1,54 @@
+{% extends 'item/base.html' %}
+
+{% block title %}訊息列表{% endblock %}
+
+{% block content %}
+	<div class = "col-span-2 p-6 bg-gray-100 rounded-xl">
+		<h1 class="mb-6 text-2xl" align="center">寄出的訊息</h1>
+	  	<ul>
+	    	{% for message in sent_messages %}
+		        {% if message.item.created_by == request.user %}
+		          	<div class = "col-span-2 p-6 bg-gray-100 rounded-xl">
+		            	<strong>商品名稱:</strong> {{ message.item.name }} (你的商品)<br>
+		            	<strong>收件人: </strong><span style="color:blue;"><a href="{% url 'user_message' user_id=message.receiver.id %}"  font color='blue'>{{ message.receiver.username }}</a></span><br>
+		            	<strong>訊息內容:</strong> {{ message.content }}<br>
+		            	<strong>Published Time:</strong> {{ message.pub_time }}
+		          	</div>
+		        {% else %}
+		          	<div class = "col-span-2 p-6 bg-gray-100 rounded-xl">
+		            	<strong>商品名稱:</strong> {{ message.item.name }}<br>
+		            	<strong>收件人: </strong><span style="color:blue;"><a href="{% url 'user_message' user_id=message.receiver.id %}"  font color='blue'>{{ message.receiver.username }}</a></span><br>
+		            	<strong>訊息內容:</strong> {{ message.content }}<br>
+		            	<strong>Published Time:</strong> {{ message.pub_time }}
+		          	</div>
+		        {% endif %}
+	    	{% empty %}
+	      		<li>No messages available.</li>
+	    	{% endfor %}
+	  	</ul>
+	</div><br>
+	<div class = "col-span-2 p-6 bg-gray-100 rounded-xl">
+	  	<h1 class="mb-6 text-2xl" align="center">收到的訊息</h1>
+		 <ul>
+		    {% for message in received_messages %}
+		      	{% if message.item.created_by == request.user %}
+		          	<div class = "col-span-2 p-6 bg-gray-100 rounded-xl">
+		            	<strong>商品名稱:</strong> {{ message.item.name }} (你的商品)<br>
+		            	<strong>寄件人: </strong><span style="color:blue;"><a href="{% url 'user_message' user_id=message.sender.id %}"  font color='blue'>{{ message.sender.username }}</a></span><br>
+		           	 	<strong>訊息內容:</strong> {{ message.content }}<br>
+		            	<strong>Published Time:</strong> {{ message.pub_time }}
+		          	</div>
+		      	{% else %}
+		          	<div class = "col-span-2 p-6 bg-gray-100 rounded-xl">
+		            	<strong>商品名稱:</strong> {{ message.item.name }}<br>
+		            	<strong>寄件人: </strong><span style="color:blue;"><a href="{% url 'user_message' user_id=message.sender.id %}"  font color='blue'>{{ message.sender.username }}</a></span><br>
+		            	<strong>訊息內容:</strong> {{ message.content }}<br>
+		            	<strong>Published Time:</strong> {{ message.pub_time }}
+		          	</div>
+		      	{% endif %}
+		    {% empty %}
+		      	<li>No messages available.</li>
+		    {% endfor %}
+	  	</ul>
+	</div>
+{% endblock %}

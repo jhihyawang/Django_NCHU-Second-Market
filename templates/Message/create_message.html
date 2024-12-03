@@ -1,0 +1,24 @@
+{% extends 'item/base.html' %}
+{% block title %}寄送私人訊息{% endblock %}
+{% block content %}
+	<div class = "col-span-2 p-6 bg-gray-100 rounded-xl" align="center">
+		<h1 class="mb-6 text-3xl">跟賣家聯絡</h1>
+    	<h2 class="mb-6 text-2xl">你想購買的商品: {{ item.name }}</h2>
+    	<div class="col-span-3">
+    		<img src="{{item.image.url}}" class="rounded-xl"><br>
+    	</div>
+    	<h3 class="mb-6 text-1xl">賣家: {{ item.created_by.username }}</h2>
+    	<h3 class="mb-6 text-1xl">寄件人: {{ request.user.username }}</h2>
+  	</div><br>
+  	<div class = "col-span-2 p-6 bg-gray-100 rounded-xl" align="center">
+    	<form action="." method = "POST">
+	      	{% csrf_token %}
+	      	<input type="hidden" name="item_id" value="{{ item.id }}">
+	        	<div class="mb-6 text-2xl">
+	            	<h2 class="mb-6 text-2xl">輸入訊息內容</h2>
+	            	<textarea class="form-control" id="content" name="content" rows="4"></textarea>
+	        	</div>
+	      	<button type="submit" class="px-6 py-3 text-lg font-semibold bg-purple-300 text-white rounded-xl hover:bg-purple-500">Send Message</button>
+    	</form>
+  	</div>
+ {% endblock %}
