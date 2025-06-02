@@ -1,5 +1,6 @@
 import pandas as pd
 from typing import List, Union, Callable
+import ollama
 
 class TableProcessor:
     """
@@ -7,18 +8,24 @@ class TableProcessor:
     適用於 RAG 系統中向量化前的資料處理。支援結構化輸出與逐列語意摘要。
     """
 
-    def __init__(self):
-        pass
+    def __init__(self, df: pd.DataFrame):
+        """
+        初始化 TableProcessor 並儲存表格資料。
+
+        Args:
+            df (pd.DataFrame): 傳入的表格資料
+        """
+        self.df = df
 
     def flatten_column(self, col: Union[str, tuple]) -> str:
         """
-        將欄位名稱統一為單一字串格式。若為多層欄位（MultiIndex）則以 " > " 串接。
+        將欄位名稱轉換為字串。若為多層欄位 (MultiIndex)，則合併成一行文字。
 
         Args:
-            col (Union[str, tuple]): 欄位名稱或欄位層級組成的 tuple
+            col (Union[str, tuple]): 欄位名稱或多層欄位結構
 
         Returns:
-            str: 標準化後的欄位名稱
+            str: 合併後的欄位名稱字串
         """
         if isinstance(col, tuple):
             return " > ".join(str(c) for c in col if c and str(c).strip())
@@ -26,13 +33,13 @@ class TableProcessor:
 
     def clean_columns(self, df: pd.DataFrame) -> List[str]:
         """
-        清洗欄位名稱，處理空值與重複命名欄位，確保每個欄位具備唯一性。
+        清洗欄位名稱，處理空值、nan 或重複欄位名稱。
 
         Args:
-            df (pd.DataFrame): 原始資料表格
+            df (pd.DataFrame): 欲處理的資料表格
 
         Returns:
-            List[str]: 清洗後的欄位名稱列表
+            List[str]: 清洗後的欄位名稱清單
         """
         seen = set()
         new_cols = []
@@ -51,15 +58,15 @@ class TableProcessor:
 
     def df_to_sentences(self, df: pd.DataFrame, row_prefix: str = "", separator: str = "；") -> List[str]:
         """
-        將 DataFrame 每一列轉換為結構化語意句，格式為「欄位: 值；欄位: 值」。
+        將 DataFrame 每一列轉換為結構語意句，格式為「欄位: 值；欄位: 值...」。
 
         Args:
-            df (pd.DataFrame): 輸入的資料表格
-            row_prefix (str): 每列開頭的前綴文字（可選）
-            separator (str): 欄位對之間的分隔符號（預設為全形分號）
+            df (pd.DataFrame): 欲轉換的資料表格
+            row_prefix (str): 每列句子的前綴字串（例如"第 X 筆"）
+            separator (str): 欄位對之間的分隔符號，預設為全形分號（；）
 
         Returns:
-            List[str]: 每一列轉換後的語意句子列表
+            List[str]: 每列轉換後的語意句清單
         """
         df = df.copy()
         df.columns = self.clean_columns(df)
@@ -81,34 +88,31 @@ class TableProcessor:
 
         return sentences
 
-    def to_sentences(self, df: pd.DataFrame) -> List[str]:
+    def to_sentences(self) -> List[str]:
         """
-        將 DataFrame 轉換為語意句列表，為對外公開的簡化方法。
-
-        Args:
-            df (pd.DataFrame): 輸入的表格資料
+        將內部儲存的 DataFrame 轉換為語意句列表。
 
         Returns:
             List[str]: 結構化語意句陣列（每列一筆）
         """
-        return self.df_to_sentences(df)
+        return self.df_to_sentences(self.df)
 
     def summarizer(self, model_name="gemma3:12b", sentence="") -> str:
         """
-        使用本地 Ollama 模型對輸入語意句進行摘要回應。
-    
+        使用本地 Ollama 模型對單列語意句進行自然語句轉換。
+
         Args:
-            model_name (str): 使用的模型名稱，例如 gemma3:12b
-            sentence (str): 要摘要的語意句文字
-    
+            model_name (str): 使用的模型名稱，預設為 "gemma3:12b"
+            sentence (str): 欲進行自然語句轉換的結構語意句
+
         Returns:
-            str: 模型回傳的自然語意句
+            str: LLM 回傳的自然語意句，若失敗則回傳原始輸入
         """
         system_prompt = (
             "請將輸入的表格列文字轉換為自然語句，"
             "不要省略任何資訊，也不要添加多餘說明，請用口語化且清楚的中文回答。"
         )
-    
+
         try:
             response = ollama.chat(
                 model=model_name,
@@ -120,19 +124,19 @@ class TableProcessor:
             return response["message"]["content"]
         except Exception as e:
             print(f"❌ Ollama 調用失敗: {e}")
-            return sentence  # 回傳原句以保底
-  
-    
-    def to_natural_summary(self, df: pd.DataFrame, summarizer: Callable[[str], str]) -> List[str]:
+            return sentence
+
+    def to_natural_summary(self, summarizer: Callable[[str], str] = None) -> List[str]:
         """
-        將每列語意句透過 summarizer 函數（例如 LLM）轉換為自然語句摘要。
+        將每列語意句透過指定的 summarizer 函數（例如 LLM）轉換為自然語句摘要。
 
         Args:
-            df (pd.DataFrame): 輸入的表格資料
-            summarizer (Callable[[str], str]): 接收語意句並回傳自然語句的摘要函數
+            summarizer (Callable[[str], str], optional): 用來轉換語意句的函數，預設使用 self.summarizer
 
         Returns:
-            List[str]: 每列經 LLM 轉換後的自然語意句列表
+            List[str]: 每列經轉換後的自然語意句清單
         """
-        structured_sentences = self.to_sentences(df)
+        structured_sentences = self.to_sentences()
+        if summarizer is None:
+            summarizer = self.summarizer
         return [summarizer(sentence) for sentence in structured_sentences]
